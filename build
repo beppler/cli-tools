@@ -13,6 +13,13 @@ esac
 
 if [ "$ENGINE" = "container" ]; then
   container system start >/dev/null 2>&1 || true
+  # container build runs its BuildKit builder under Rosetta regardless of
+  # target architecture; install it once if missing, or `container build`
+  # fails with "Rosetta is not installed" even for native arm64 images.
+  if ! pkgutil --pkg-info com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1; then
+    echo "Installing Rosetta 2 (required by container's build tool)..."
+    softwareupdate --install-rosetta --agree-to-license
+  fi
 fi
 
 "$ENGINE" build -t claude-cli ./claude
