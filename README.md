@@ -81,7 +81,7 @@ No WSL-side environment configuration needed.
 
 All three engines cache the `npm install` layer, so a plain rebuild won't pull newer versions. Use the update script instead:
 
-    ./update.sh     # macOS/Linux
+    ./update     # macOS/Linux
     ./update.ps1    # Windows
 
 Both force a `--no-cache` rebuild of all three images.
