@@ -65,6 +65,15 @@ Each tool's config/credentials persist in its own home directory, so you only lo
 
 Browser-based OAuth login (Claude Code, Gemini CLI) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
 
+**Codex is the exception:** its "Sign in with ChatGPT" browser flow won't work in this containerized setup. Codex's OAuth callback server is hardcoded to bind `127.0.0.1:1455` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead:
+
+    codex login --device-auth
+
+Device-code login is **disabled by default** on OpenAI accounts and must be turned on before it will work:
+
+- Personal account: ChatGPT → Settings → Security → enable device code login.
+- Team/Enterprise/Edu workspace: a workspace admin must enable it under Workspace Settings → Permissions → "Allow device code login" — it's greyed out for regular members otherwise.
+
 Alternatively, set an API key before running:
 
     export ANTHROPIC_API_KEY=...    # macOS/Linux
