@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Builds all three isolated CLI images and installs the wrapper scripts.
+# Auto-detects the engine: Apple `container` on macOS, Podman on Linux.
+# On Windows, use build.ps1 instead.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+case "$(uname -s)" in
+  Darwin) ENGINE=container ;;
+  Linux)  ENGINE=podman ;;
+  *) echo "Unsupported OS: $(uname -s). Use build.ps1 on Windows." >&2; exit 1 ;;
+esac
+
+if [ "$ENGINE" = "container" ]; then
+  container system start >/dev/null 2>&1 || true
+fi
+
+"$ENGINE" build -t claude-cli ./claude
+"$ENGINE" build -t codex-cli ./codex
+"$ENGINE" build -t gemini-cli ./gemini
+
+mkdir -p "$HOME/.local/bin"
+cp bin/claude bin/codex bin/gemini "$HOME/.local/bin/"
+chmod +x "$HOME/.local/bin/claude" "$HOME/.local/bin/codex" "$HOME/.local/bin/gemini"
+
+echo "Done ($ENGINE). Make sure \$HOME/.local/bin is on your PATH, then just run: claude / codex / gemini"

@@ -1,0 +1,28 @@
+# Environment variables and credentials (NEVER commit these)
+.env
+.env.*
+!.env.example
+*.env
+
+# Execution logs and debug outputs
+*.log
+log/
+logs/
+
+# Temporary files and backups
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Test outputs and reports
+/out/
+/dist/
+shunit2/
+coverage/
+
+# OS-specific metadata
+.DS_Store
+Thumbs.db
+desktop.ini
