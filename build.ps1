@@ -9,7 +9,7 @@ foreach ($tool in @("claude", "codex", "gemini")) {
     Pop-Location
 }
 
-$Dest = "$env:USERPROFILE\.local\bin"
+$Dest = "$env:LOCALAPPDATA\Programs\bin"
 New-Item -ItemType Directory -Force -Path $Dest | Out-Null
 Copy-Item (Join-Path $ScriptDir "bin\*.cmd") $Dest -Force
 Copy-Item (Join-Path $ScriptDir "bin\*.ps1") $Dest -Force

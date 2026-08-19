@@ -37,7 +37,9 @@ Then build and install:
 
     ./build.ps1
 
-Installs wrapper scripts to `%USERPROFILE%\.local\bin` — add that to your PATH and `claude`, `codex`, `gemini` work from PowerShell or cmd.exe. No Docker Desktop, no Podman, no manual WSL distro setup — `wslc.exe` ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
+Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH and `claude`, `codex`, `gemini` work from PowerShell or cmd.exe.
+
+On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
 ## Usage
 
