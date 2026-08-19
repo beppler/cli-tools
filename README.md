@@ -41,6 +41,17 @@ Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH
 
 On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
+**WSL:**
+
+To make Podman network work on WSL, the slirp4netns package must be installed:
+
+    sudo apt update && sudo apt install -y slirp4netns
+
+Then `/etc/containers/containers.conf` the following lines must be added:
+
+    [network]
+    default_rootless_network_cmd = "slirp4netns"
+
 ## Usage
 
 Same on every OS — from any project directory:
