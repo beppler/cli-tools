@@ -1,9 +1,9 @@
-# Builds all three isolated CLI images using WSL Containers (wslc.exe),
+# Builds all isolated CLI images using WSL Containers (wslc.exe),
 # and installs the wrapper scripts to %USERPROFILE%\.local\bin.
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-foreach ($tool in @("claude", "codex", "gemini")) {
+foreach ($tool in @("claude", "codex", "gemini", "opencode")) {
     Push-Location (Join-Path $ScriptDir $tool)
     wslc build -t "$tool-cli" .
     Pop-Location

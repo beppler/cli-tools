@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Runs opencode in an isolated container.
+# Engine: Apple `container` on macOS, Podman on Linux.
+set -euo pipefail
+
+case "$(uname -s)" in
+  Darwin) ENGINE=container ;;
+  Linux)  ENGINE=podman ;;
+  *) echo "Unsupported OS: $(uname -s)" >&2; exit 1 ;;
+esac
+
+HOME_DIR="$HOME/.cli-tools/opencode-home"
+mkdir -p "$HOME_DIR"
+
+"$ENGINE" run --rm -it \
+  -v "$PWD":/workspace -w /workspace \
+  -v "$HOME_DIR":/root \
+  -e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
+  -e OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
+  -e GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
+  -e GOOGLE_API_KEY="${GOOGLE_API_KEY:-}" \
+  -e GOOGLE_GENAI_USE_VERTEXAI="${GOOGLE_GENAI_USE_VERTEXAI:-}" \
+  opencode-cli "$@"
