@@ -18,7 +18,7 @@ Image stores are per-engine and per-machine — build once on each machine you u
     ./build
 
 Installs wrapper scripts to `~/.local/bin/claude`, `~/.local/bin/codex`,
-`~/.local/bin/gemini`, `~/.local/bin/opencode`. Make sure `~/.local/bin` is on your `PATH`.
+`~/.local/bin/gemini-cli`, `~/.local/bin/opencode`. Make sure `~/.local/bin` is on your `PATH`.
 
 On macOS, `container` requires Apple Silicon and macOS 15+ (full support on macOS 26). If the daemon isn't running yet, `build` starts it for you; on some setups you may need to run `container system start` again after a reboot.
 
@@ -37,7 +37,7 @@ Then build and install:
 
     ./build.ps1
 
-Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH and `claude`, `codex`, `gemini`, `opencode` work from PowerShell or cmd.exe.
+Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH and `claude`, `codex`, `gemini-cli`, `opencode` work from PowerShell or cmd.exe.
 
 On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
@@ -59,7 +59,7 @@ Same on every OS — from any project directory:
     cd ~/my-project
     claude
     codex
-    gemini
+    gemini-cli
     opencode
 
 The current directory is mounted into the container at `/workspace`, so each tool only sees the project you're in.
