@@ -1,4 +1,4 @@
-# Containerized AI CLIs (Claude Code, Codex, Gemini CLI, OpenCode)
+# Containerized AI CLIs (Claude, Codex, Copilot, Gemini, OpenCode)
 
 Each tool runs in its own container image with its own Node.js runtime.
 The engine is auto-detected/chosen per OS:
@@ -59,6 +59,7 @@ Same on every OS — from any project directory:
     cd ~/my-project
     claude
     codex
+    copilot
     gemini-cli
     opencode
 
@@ -70,18 +71,18 @@ Each tool's config/credentials persist in its own home directory, so you only lo
 
     ~/.cli-tools/claude-home              (macOS/Linux)
     ~/.cli-tools/codex-home
+    ~/.cli-tools/copilot-home
     ~/.cli-tools/gemini-home
     ~/.cli-tools/opencode-home
     %USERPROFILE%\.cli-tools\claude-home  (Windows, same idea)
     %USERPROFILE%\.cli-tools\codex-home
+    %USERPROFILE%\.cli-tools\copilot-home
     %USERPROFILE%\.cli-tools\gemini-home
     %USERPROFILE%\.cli-tools\opencode-home
 
-Browser-based OAuth login (Claude Code, Gemini CLI) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
+Browser-based OAuth login (Claude, Gemini) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
 
-**Codex is the exception:** its "Sign in with ChatGPT" browser flow won't work in this containerized setup. Codex's OAuth callback server is hardcoded to bind `127.0.0.1:1455` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead:
-
-    codex login --device-auth
+Device-code login should be used on Codex and Copilot because browser flow won't work in this containerized setup. OAuth callback server is hardcoded to bind `127.0.0.1` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead.
 
 Device-code login is **disabled by default** on OpenAI accounts and must be turned on before it will work:
 

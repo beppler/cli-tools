@@ -12,6 +12,7 @@ esac
 
 "$ENGINE" build --no-cache -t claude-cli ./claude
 "$ENGINE" build --no-cache -t codex-cli ./codex
+"$ENGINE" build --no-cache -t copilot-cli ./copilot
 "$ENGINE" build --no-cache -t gemini-cli ./gemini
 "$ENGINE" build --no-cache -t opencode-cli ./opencode
 

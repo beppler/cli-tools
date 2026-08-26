@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Runs Codex CLI in an isolated container.
+# Engine: Apple `container` on macOS, Podman on Linux.
+set -euo pipefail
+
+case "$(uname -s)" in
+  Darwin) ENGINE=container ;;
+  Linux)  ENGINE=podman ;;
+  *) echo "Unsupported OS: $(uname -s)" >&2; exit 1 ;;
+esac
+
+HOME_DIR="$HOME/.cli-tools/copilot-home"
+mkdir -p "$HOME_DIR"
+
+"$ENGINE" run --rm -it \
+  -v "$PWD":/workspace -w /workspace \
+  -v "$HOME_DIR":/root \
+  copilot-cli "$@"

@@ -3,7 +3,7 @@
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-foreach ($tool in @("claude", "codex", "gemini", "opencode")) {
+foreach ($tool in @("claude", "codex", "copilot", "gemini", "opencode")) {
     Push-Location (Join-Path $ScriptDir $tool)
     wslc build -t "$tool-cli" .
     Pop-Location
