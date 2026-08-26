@@ -22,13 +22,15 @@ if [ "$ENGINE" = "container" ]; then
   fi
 fi
 
-tools=("claude", "codex", "copilot", "gemini", "opencode")
+tools=("claude" "codex" "copilot" "gemini" "opencode")
 
-for tool in "${!tools[@]}"; do
+for tool in "${tools[@]}"; do
   "$ENGINE" build --no-cache -t $tool-cli ./$tool
 done
 
+cli_tools=("claude" "codex" "copilot" "gemini-cli" "opencode")
+
 mkdir -p "$HOME/.local/bin"
-cp bin/claude bin/codex bin/copilot bin/gemini-cli bin/opencode "$HOME/.local/bin/"
+cp "${cli_tools[@]/#/bin/}" "$HOME/.local/bin/"
 
 echo "Done ($ENGINE). Make sure \$HOME/.local/bin is on your PATH, then just run: claude / codex / gemini"
