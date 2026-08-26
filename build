@@ -22,11 +22,11 @@ if [ "$ENGINE" = "container" ]; then
   fi
 fi
 
-"$ENGINE" build -t claude-cli ./claude
-"$ENGINE" build -t codex-cli ./codex
-"$ENGINE" build -t copilot-cli ./copilot
-"$ENGINE" build -t gemini-cli ./gemini
-"$ENGINE" build -t opencode-cli ./opencode
+tools=("claude", "codex", "copilot", "gemini", "opencode")
+
+for tool in "${!tools[@]}"; do
+  "$ENGINE" build --no-cache -t $tool-cli ./$tool
+done
 
 mkdir -p "$HOME/.local/bin"
 cp bin/claude bin/codex bin/copilot bin/gemini-cli bin/opencode "$HOME/.local/bin/"

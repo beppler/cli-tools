@@ -102,12 +102,3 @@ Alternatively, set an API key before running:
 On Windows this just works — `wslc.exe` is a native Windows process, so the scripts read `$env:...` directly and pass it into the container.
 
 No WSL-side environment configuration needed.
-
-## Updating
-
-All engines cache the `npm install` layer, so a plain rebuild won't pull newer versions. Use the update script instead:
-
-    ./update     # macOS/Linux
-    ./update.ps1    # Windows
-
-Both force a `--no-cache` rebuild of all images.
