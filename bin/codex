@@ -22,5 +22,5 @@ fi
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
-  "${ENV_ARGS[@]}" \
+  "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
   codex-cli "$@"

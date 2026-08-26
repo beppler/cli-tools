@@ -14,24 +14,24 @@ mkdir -p "$HOME_DIR"
 
 ENV_ARGS=()
 
-if [ -n "${ANTHROPIC_API_KEY}" ]; then
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   ENV_ARGS+=(-e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}")
 fi
 
-if [ -n "${GEMINI_API_KEY}" ]; then
+if [ -n "${GEMINI_API_KEY:-}" ]; then
   ENV_ARGS+=(-e GEMINI_API_KEY="${GEMINI_API_KEY}")
 fi
 
-if [ -n "${GOOGLE_API_KEY}" ]; then
+if [ -n "${GOOGLE_API_KEY:-}" ]; then
   ENV_ARGS+=(-e GOOGLE_API_KEY="${GOOGLE_API_KEY}")
 fi
 
-if [ -n "${GOOGLE_GENAI_USE_VERTEXAI}" ]; then
+if [ -n "${GOOGLE_GENAI_USE_VERTEXAI:-}" ]; then
   ENV_ARGS+=(-e GOOGLE_GENAI_USE_VERTEXAI="${GOOGLE_GENAI_USE_VERTEXAI}")
 fi
 
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
-  "${ENV_ARGS[@]}" \
+  "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
   opencode-cli "$@"
