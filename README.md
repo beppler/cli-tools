@@ -80,9 +80,11 @@ Each tool's config/credentials persist in its own home directory, so you only lo
     %USERPROFILE%\.cli-tools\gemini-home
     %USERPROFILE%\.cli-tools\opencode-home
 
-Browser-based OAuth login (Claude, Gemini) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
+Browser-based OAuth login (**Claude**, **Gemini**) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
 
-Device-code login should be used on Codex and Copilot because browser flow won't work in this containerized setup. OAuth callback server is hardcoded to bind `127.0.0.1` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead.
+OAuth do not work for **Gemini** for personal accounts, on this case a `.env` file can be created configuring the `GEMINI_API_KEY` obtained from [Google AI Studio](https://aistudio.google.com/app/apikey) on `gemini-home` directory.
+
+Device-code login should be used on **Codex** and **Copilot** because browser flow won't work in this containerized setup. OAuth callback server is hardcoded to bind `127.0.0.1` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead.
 
 Device-code login is **disabled by default** on OpenAI accounts and must be turned on before it will work:
 
