@@ -12,12 +12,26 @@ esac
 HOME_DIR="$HOME/.cli-tools/opencode-home"
 mkdir -p "$HOME_DIR"
 
+ENV_ARGS=()
+
+if [ -n "${ANTHROPIC_API_KEY}" ]; then
+  ENV_ARGS+=(-e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}")
+fi
+
+if [ -n "${GEMINI_API_KEY}" ]; then
+  ENV_ARGS+=(-e GEMINI_API_KEY="${GEMINI_API_KEY}")
+fi
+
+if [ -n "${GOOGLE_API_KEY}" ]; then
+  ENV_ARGS+=(-e GOOGLE_API_KEY="${GOOGLE_API_KEY}")
+fi
+
+if [ -n "${GOOGLE_GENAI_USE_VERTEXAI}" ]; then
+  ENV_ARGS+=(-e GOOGLE_GENAI_USE_VERTEXAI="${GOOGLE_GENAI_USE_VERTEXAI}")
+fi
+
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
-  -e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
-  -e OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
-  -e GEMINI_API_KEY="${GEMINI_API_KEY:-}" \
-  -e GOOGLE_API_KEY="${GOOGLE_API_KEY:-}" \
-  -e GOOGLE_GENAI_USE_VERTEXAI="${GOOGLE_GENAI_USE_VERTEXAI:-}" \
+  "${ENV_ARGS[@]}" \
   opencode-cli "$@"

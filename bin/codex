@@ -12,8 +12,15 @@ esac
 HOME_DIR="$HOME/.cli-tools/codex-home"
 mkdir -p "$HOME_DIR"
 
+ENV_ARGS=()
+
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  ENV_ARGS+=(-e OPENAI_API_KEY="$OPENAI_API_KEY")
+fi
+
+
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
-  -e OPENAI_API_KEY="${OPENAI_API_KEY:-}" \
+  "${ENV_ARGS[@]}" \
   codex-cli "$@"
