@@ -6,8 +6,17 @@ New-Item -ItemType Directory -Force -Path $HomeDirWin | Out-Null
 $HomeDir = $HomeDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
 
+$EnvArgs=@(
+  "-e", "COLORTERM=truecolor",
+  "-e", "TERM=xterm-256color"
+)
+
+if (-not [string]::IsNullOrEmpty($env:ANTHROPIC_API_KEY)) {
+  $envArgs += "-e", "ANTHROPIC_API_KEY=$env:ANTHROPIC_API_KEY"
+}
+
 wslc run --rm -it `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `
-  -e "ANTHROPIC_API_KEY=$env:ANTHROPIC_API_KEY" `
+  $EnvArgs `
   claude-cli @args
