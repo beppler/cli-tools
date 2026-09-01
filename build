@@ -33,4 +33,4 @@ cli_tools=("claude" "codex" "copilot" "gemini-cli" "opencode")
 mkdir -p "$HOME/.local/bin"
 cp "${cli_tools[@]/#/bin/}" "$HOME/.local/bin/"
 
-echo "Done ($ENGINE). Make sure \$HOME/.local/bin is on your PATH, then just run: claude / codex / gemini"
+echo "Done ($ENGINE). Make sure \$HOME/.local/bin is on your PATH, then just run: claude / codex / copilot / gemini-cli / opencode"
