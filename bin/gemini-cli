@@ -31,4 +31,4 @@ fi
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
   "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
-  gemini-cli "$@"
+  gemini-cli-cli "$@"

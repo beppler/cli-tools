@@ -3,7 +3,7 @@
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-foreach ($tool in @("claude", "codex", "copilot", "gemini", "opencode")) {
+foreach ($tool in @("claude", "codex", "copilot", "gemini-cli", "opencode")) {
     wslc build --no-cache -t "$tool-cli" ".\$tool"
 }
 
