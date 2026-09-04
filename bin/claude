@@ -14,6 +14,14 @@ mkdir -p "$HOME_DIR"
 
 ENV_ARGS=()
 
+if [ -n "${TERM:-}" ]; then
+  ENV_ARGS+=(-e TERM="$TERM")
+fi
+
+if [ -n "${COLORTERM:-}" ]; then
+  ENV_ARGS+=(-e COLORTERM="$COLORTERM")
+fi
+
 if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   ENV_ARGS+=(-e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY")
 fi

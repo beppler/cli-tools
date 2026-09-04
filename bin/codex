@@ -14,10 +14,17 @@ mkdir -p "$HOME_DIR"
 
 ENV_ARGS=()
 
+if [ -n "${TERM:-}" ]; then
+  ENV_ARGS+=(-e TERM="$TERM")
+fi
+
+if [ -n "${COLORTERM:-}" ]; then
+  ENV_ARGS+=(-e COLORTERM="$COLORTERM")
+fi
+
 if [ -n "${OPENAI_API_KEY:-}" ]; then
   ENV_ARGS+=(-e OPENAI_API_KEY="$OPENAI_API_KEY")
 fi
-
 
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \

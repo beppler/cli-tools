@@ -14,6 +14,14 @@ mkdir -p "$HOME_DIR"
 
 ENV_ARGS=()
 
+if [ -n "${TERM:-}" ]; then
+  ENV_ARGS+=(-e TERM="$TERM")
+fi
+
+if [ -n "${COLORTERM:-}" ]; then
+  ENV_ARGS+=(-e COLORTERM="$COLORTERM")
+fi
+
 if [ -n "${GEMINI_API_KEY:-}" ]; then
   ENV_ARGS+=(-e GEMINI_API_KEY="${GEMINI_API_KEY}")
 fi
