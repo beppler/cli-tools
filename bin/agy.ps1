@@ -1,7 +1,7 @@
-# Runs Gemini CLI using WSL Containers (wslc.exe) — no Docker Desktop, no Podman.
+# Runs Antigravity CLI using WSL Containers (wslc.exe) — no Docker Desktop, no Podman.
 $ErrorActionPreference = "Stop"
 
-$HomeDirWin = "$env:USERPROFILE\.cli-tools\gemini-home"
+$HomeDirWin = "$env:USERPROFILE\.cli-tools\antigravity-home"
 New-Item -ItemType Directory -Force -Path $HomeDirWin | Out-Null
 $HomeDir = $HomeDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
