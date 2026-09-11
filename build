@@ -25,7 +25,7 @@ fi
 tools=("agy" "claude" "codex" "copilot" "opencode")
 
 for tool in "${tools[@]}"; do
-  "$ENGINE" build --no-cache -t $tool-cli ./$tool
+  "$ENGINE" build --no-cache -t $tool-cli ./containers/$tool
 done
 
 mkdir -p "$HOME/.local/bin"

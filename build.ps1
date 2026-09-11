@@ -6,7 +6,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $tools = @("agy", "claude", "codex", "copilot", "opencode")
 
 foreach ($tool in $tools) {
-    wslc build --no-cache -t "$tool-cli" ".\$tool"
+    wslc build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
