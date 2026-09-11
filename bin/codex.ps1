@@ -15,7 +15,8 @@ if (-not [string]::IsNullOrEmpty($env:OPENAI_API_KEY)) {
   $envArgs += "-e", "OPENAI_API_KEY=$env:OPENAI_API_KEY"
 }
 
-wslc run --rm -it `
+wslc run --rm -it  `
+  --name "codex_cli_$(Get-Random)" `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `
   $EnvArgs `

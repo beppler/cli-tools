@@ -7,6 +7,7 @@ $HomeDir = $HomeDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
 
 wslc run --rm -it `
+  --name "copilot_cli_$(Get-Random)" `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `
   copilot-cli @args

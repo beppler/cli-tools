@@ -15,7 +15,8 @@ if (-not [string]::IsNullOrEmpty($env:ANTHROPIC_API_KEY)) {
   $envArgs += "-e", "ANTHROPIC_API_KEY=$env:ANTHROPIC_API_KEY"
 }
 
-wslc run --rm -it `
+wslc run --rm -it  `
+  --name "claude_cli_$(Get-Random)" `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `
   $EnvArgs `
