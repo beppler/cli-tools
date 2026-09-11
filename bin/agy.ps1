@@ -27,4 +27,4 @@ wslc run --rm -it `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `
   $EnvArgs `
-  gemini-cli-cli @args
+  agy-cli @args
