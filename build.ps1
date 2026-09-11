@@ -3,13 +3,18 @@
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-foreach ($tool in @("agy", "claude", "codex", "copilot", "opencode")) {
+$tools = @("agy", "claude", "codex", "copilot", "opencode")
+
+foreach ($tool in $tools) {
     wslc build --no-cache -t "$tool-cli" ".\$tool"
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
 New-Item -ItemType Directory -Force -Path $Dest | Out-Null
-Copy-Item (Join-Path $ScriptDir "bin\*.cmd") $Dest -Force
-Copy-Item (Join-Path $ScriptDir "bin\*.ps1") $Dest -Force
 
-Write-Host "Done. Add $Dest to your PATH (if not already), then just run: agy / claude / codex / copilot / opencode"
+foreach ($tool in $tools) {
+    Copy-Item (Join-Path $ScriptDir "bin" "$tool.cmd") $Dest -Force
+    Copy-Item (Join-Path $ScriptDir "bin" "$tool.ps1") $Dest -Force
+}
+
+Write-Host "Done. Add $Dest to your PATH (if not already), then just run: $($tools -join ' ')"
