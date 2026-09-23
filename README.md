@@ -20,6 +20,12 @@ Image stores are per-engine and per-machine — build once on each machine you u
 Installs wrapper scripts to `~/.local/bin/claude`, `~/.local/bin/codex`,
 `~/.local/bin/agy`, `~/.local/bin/opencode`. Make sure `~/.local/bin` is on your `PATH`.
 
+By default every tool is built. To rebuild only some of them, pass their names:
+
+    ./build claude agy
+
+Only the images and wrapper scripts for the tools you name are (re)built and installed.
+
 On macOS, `container` requires Apple Silicon and macOS 15+ (full support on macOS 26). If the daemon isn't running yet, `build` starts it for you; on some setups you may need to run `container system start` again after a reboot.
 
 **Windows:**
@@ -38,6 +44,10 @@ Then build and install:
     ./build.ps1
 
 Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH and `claude`, `codex`, `agy`, `opencode` work from PowerShell or cmd.exe.
+
+As on macOS/Linux, every tool is built by default; pass names to build only some:
+
+    ./build.ps1 claude agy
 
 On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 

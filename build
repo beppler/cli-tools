@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Builds all isolated CLI images and installs the wrapper scripts.
+# Builds the isolated CLI images and installs the wrapper scripts.
+# Builds every tool by default, or only the ones named as arguments:
+#   ./build            # all tools
+#   ./build claude agy # just these
 # Auto-detects the engine: Apple `container` on macOS, Podman on Linux.
 # On Windows, use build.ps1 instead.
 set -euo pipefail
@@ -22,7 +25,19 @@ if [ "$ENGINE" = "container" ]; then
   fi
 fi
 
-tools=("agy" "claude" "codex" "copilot" "opencode")
+all_tools=("agy" "claude" "codex" "copilot" "opencode")
+
+if [ "$#" -gt 0 ]; then
+  tools=("$@")
+  for tool in "${tools[@]}"; do
+    case " ${all_tools[*]} " in
+      *" $tool "*) ;;
+      *) echo "Unknown tool: $tool (available: ${all_tools[*]})" >&2; exit 1 ;;
+    esac
+  done
+else
+  tools=("${all_tools[@]}")
+fi
 
 for tool in "${tools[@]}"; do
   "$ENGINE" build --no-cache -t $tool-cli ./containers/$tool
