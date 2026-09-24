@@ -8,9 +8,7 @@ RUN apt-get update \
 # Install global bun packages outside of $HOME, since $HOME (/root) is
 # bind-mounted over at runtime by bin/opencode, which would otherwise
 # hide the default $HOME/.bun install location.
-ENV BUN_INSTALL=/usr/local
-
-RUN bun add -g opencode-ai
+RUN BUN_INSTALL=/usr/local bun add -g --trust @opencode/cli
 
 ENV OPENCODE_DISABLE_AUTOUPDATE=true
 
