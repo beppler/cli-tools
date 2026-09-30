@@ -23,7 +23,7 @@ if (-not [string]::IsNullOrEmpty($env:GOOGLE_GENAI_USE_VERTEXAI)) {
   $EnvArgs += "-e", "GOOGLE_GENAI_USE_VERTEXAI=$env:GOOGLE_GENAI_USE_VERTEXAI"
 }
 
-wslc run --rm -it `
+container run --rm -it `
   --name "agy_cli_$(Get-Random)" `
   -v "${Workspace}:/workspace" -w /workspace `
   -v "${HomeDir}:/root" `

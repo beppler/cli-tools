@@ -22,7 +22,7 @@ else {
 }
 
 foreach ($tool in $Tools) {
-    wslc build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
+    container build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
