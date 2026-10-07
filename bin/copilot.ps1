@@ -1,7 +1,7 @@
-# Runs Codex CLI using WSL Containers (wslc.exe) — no Docker Desktop, no Podman.
+# Runs GitHub Copilot CLI using WSL Containers (wslc.exe) — no Docker Desktop, no Podman.
 $ErrorActionPreference = "Stop"
 
-$HomeDirWin = "$env:USERPROFILE\.cli-tools\codex-home"
+$HomeDirWin = "$env:USERPROFILE\.cli-tools\copilot-home"
 New-Item -ItemType Directory -Force -Path $HomeDirWin | Out-Null
 $HomeDir = $HomeDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
