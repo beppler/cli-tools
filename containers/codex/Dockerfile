@@ -7,4 +7,4 @@ RUN apt-get update \
 
 RUN npm install -g @openai/codex
 
-ENTRYPOINT ["codex", "-c", "check_for_update_on_startup=false"]
+ENTRYPOINT ["codex", "-c", "check_for_update_on_startup=false", "-c", "sandbox_mode=\"danger-full-access\""]
