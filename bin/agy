@@ -34,8 +34,17 @@ if [ -n "${GOOGLE_GENAI_USE_VERTEXAI:-}" ]; then
   ENV_ARGS+=(-e GOOGLE_GENAI_USE_VERTEXAI="${GOOGLE_GENAI_USE_VERTEXAI}")
 fi
 
+# Podman-only hardening: keep just the capabilities needed for file handling
+# and apt-get; Apple `container` runs each container in its own VM instead.
+SEC_ARGS=()
+
+if [ "$ENGINE" = podman ]; then
+  SEC_ARGS+=(--security-opt no-new-privileges --cap-drop=ALL --cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETUID,SETGID)
+fi
+
 "$ENGINE" run --rm -it \
   -v "$PWD":/workspace -w /workspace \
   -v "$HOME_DIR":/root \
   "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
+  "${SEC_ARGS[@]+"${SEC_ARGS[@]}"}" \
   agy-cli "$@"

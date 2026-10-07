@@ -8,5 +8,6 @@ RUN apt-get update \
 RUN npm install -g @anthropic-ai/claude-code
 
 ENV DISABLE_AUTOUPDATER=1
+ENV IS_SANDBOX=1
 
 ENTRYPOINT ["claude"]
