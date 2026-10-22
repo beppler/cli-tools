@@ -73,7 +73,7 @@ Same on every OS — from any project directory:
     agy
     opencode
 
-The current directory is mounted into the container at `/workspace`, so each tool only sees the project you're in.
+The current directory is mounted into the container at `/workspace/<folder>-<hash>`, so each tool only sees the project you're in. The hash is taken from the host path, so every project gets its own path inside the container. That matters because the tools keep per-project state (sessions, memory, folder trust) by path. With one shared path, every project would be treated as the same one. Moving or renaming a project on the host gives it a new path, so its earlier sessions won't show up for it anymore.
 
 ## Sandbox
 

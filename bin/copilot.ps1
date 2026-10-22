@@ -6,8 +6,15 @@ New-Item -ItemType Directory -Force -Path $HomeDirWin | Out-Null
 $HomeDir = $HomeDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
 
+# Mount the project at a path unique to this host folder, so tools that keep
+# per-project state by path (sessions, trust, memory) don't mix projects.
+$Sha = [System.Security.Cryptography.SHA256]::Create()
+$Hash = -join ($Sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($PWD.Path.ToLowerInvariant())) | ForEach-Object { $_.ToString("x2") })
+$Name = (Split-Path -Leaf $PWD.Path) -replace '[^A-Za-z0-9._-]','_'
+$WorkDir = "/workspace/$Name-$($Hash.Substring(0, 12))"
+
 container run --rm -it `
   --name "copilot_cli_$(Get-Random)" `
-  -v "${Workspace}:/workspace" -w /workspace `
+  -v "${Workspace}:${WorkDir}" -w $WorkDir `
   -v "${HomeDir}:/root" `
   copilot-cli @args

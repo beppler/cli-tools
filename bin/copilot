@@ -12,6 +12,17 @@ esac
 HOME_DIR="$HOME/.cli-tools/copilot-home"
 mkdir -p "$HOME_DIR"
 
+# Mount the project at a path unique to this host folder, so tools that keep
+# per-project state by path (sessions, trust, memory) don't mix projects.
+HOST_DIR="$(pwd -P)"
+if command -v sha256sum >/dev/null 2>&1; then
+  HASH="$(printf '%s' "$HOST_DIR" | sha256sum | cut -c1-12)"
+else
+  HASH="$(printf '%s' "$HOST_DIR" | shasum -a 256 | cut -c1-12)"
+fi
+NAME="$(basename "$HOST_DIR")"
+WORKDIR="/workspace/${NAME//[^A-Za-z0-9._-]/_}-$HASH"
+
 ENV_ARGS=()
 
 if [ -n "${TERM:-}" ]; then
@@ -31,7 +42,7 @@ if [ "$ENGINE" = podman ]; then
 fi
 
 "$ENGINE" run --rm -it \
-  -v "$PWD":/workspace -w /workspace \
+  -v "$HOST_DIR":"$WORKDIR" -w "$WORKDIR" \
   -v "$HOME_DIR":/root \
   "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
   "${SEC_ARGS[@]+"${SEC_ARGS[@]}"}" \
