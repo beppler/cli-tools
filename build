@@ -5,14 +5,28 @@
 #   ./build claude agy # just these
 # Pass --scripts-only to install the wrapper scripts without rebuilding images:
 #   ./build --scripts-only [tools]
-# Auto-detects the engine: Apple `container` on macOS, Podman on Linux.
+# Auto-detects the engine: Apple `container` on macOS, Podman on Linux
+# (falling back to rootless Docker if Podman is not installed).
 # On Windows, use build.ps1 instead.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 case "$(uname -s)" in
   Darwin) ENGINE=container ;;
-  Linux)  ENGINE=podman ;;
+  Linux)
+    if command -v podman >/dev/null 2>&1; then
+      ENGINE=podman
+    elif command -v docker >/dev/null 2>&1; then
+      if ! docker info --format '{{.SecurityOptions}}' 2>/dev/null | grep -q rootless; then
+        echo "Docker is not running in rootless mode; container root would be host root." >&2
+        echo "Use rootless Docker (dockerd-rootless-setuptool.sh install) or Podman instead." >&2
+        exit 1
+      fi
+      ENGINE=docker
+    else
+      echo "No container engine found. Install podman (or docker) on Linux." >&2; exit 1
+    fi
+    ;;
   *) echo "Unsupported OS: $(uname -s). Use build.ps1 on Windows." >&2; exit 1 ;;
 esac
 

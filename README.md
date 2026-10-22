@@ -6,7 +6,7 @@ The engine is auto-detected/chosen per OS:
 | OS      | Engine                                         |
 | ------- | ---------------------------------------------- |
 | macOS   | Apple `container` (native, Apple Silicon only) |
-| Linux   | Podman                                         |
+| Linux   | Podman (rootless) — or rootless Docker         |
 | Windows | WSL Containers (`wslc.exe`) — native.          |
 
 Image stores are per-engine and per-machine — build once on each machine you use (there's no shared cache between Apple `container`, Podman, and `wslc` on another box).
@@ -85,16 +85,23 @@ The current directory is mounted into the container at `/workspace/<hash>/<folde
 
 ## Sandbox
 
-The tools run as root inside their containers. That root is not host root: rootless Podman maps it to your own user, and Apple `container` and `wslc` run each container in its own lightweight VM.
+The tools run as root inside their containers. That root is not host root: rootless Podman maps it to your own user, rootless Docker does the same, and Apple `container` and `wslc` run each container in its own lightweight VM. On Linux the scripts refuse to run against a non-rootless (system) Docker daemon, because there container root would be host root — set up rootless Docker instead:
+
+    dockerd-rootless-setuptool.sh install
+
+You can check what you're on with:
+
+    podman info --format '{{.Host.Security.Rootless}}'        # expect true
+    docker info --format '{{.SecurityOptions}}' | grep rootless
 
 **Claude skip-permissions mode:** the Claude image sets `IS_SANDBOX=1`, so `claude --dangerously-skip-permissions` works inside the container (Claude Code otherwise refuses it when running as root). It is still opt-in: plain `claude` asks for permissions as usual.
 
-**Podman hardening (Linux):** the wrappers add
+**Podman/Docker hardening (Linux):** the wrappers add
 
     --security-opt no-new-privileges
     --cap-drop=ALL --cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETUID,SETGID
 
-Processes can't gain privileges through setuid binaries, and the container drops network admin, raw sockets, kill, chroot and capability-editing privileges. The kept capabilities are what file handling and `apt-get install` inside the container need. Make sure Podman runs rootless (`podman info --format '{{.Host.Security.Rootless}}'` prints `true`); with `sudo podman`, container root is host root.
+Processes can't gain privileges through setuid binaries, and the container drops network admin, raw sockets, kill, chroot and capability-editing privileges. The kept capabilities are what file handling and `apt-get install` inside the container need. Podman and Docker must run rootless — the scripts check and refuse otherwise (see Sandbox above); with `sudo podman` or a system dockerd, container root is host root.
 
 ## Auth
 
