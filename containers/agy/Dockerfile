@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM docker.io/library/debian:stable-slim
 
 RUN apt-get update \
     && apt-get upgrade -y \
