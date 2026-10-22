@@ -11,7 +11,7 @@ $Workspace = $PWD.Path -replace '\\','/'
 $Sha = [System.Security.Cryptography.SHA256]::Create()
 $Hash = -join ($Sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($PWD.Path.ToLowerInvariant())) | ForEach-Object { $_.ToString("x2") })
 $Name = (Split-Path -Leaf $PWD.Path) -replace '[^A-Za-z0-9._-]','_'
-$WorkDir = "/workspace/$Name-$($Hash.Substring(0, 12))"
+$WorkDir = "/workspace/$($Hash.Substring(0, 12))/$Name"
 
 $EnvArgs=@(
   "-e", "COLORTERM=truecolor",
