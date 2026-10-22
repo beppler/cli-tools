@@ -26,6 +26,10 @@ By default every tool is built. To rebuild only some of them, pass their names:
 
 Only the images and wrapper scripts for the tools you name are (re)built and installed.
 
+If you only changed the wrapper scripts in `bin/`, install them without rebuilding the images (tool names work here too):
+
+    ./build --scripts-only
+
 On macOS, `container` requires Apple Silicon and macOS 15+ (full support on macOS 26). If the daemon isn't running yet, `build` starts it for you; on some setups you may need to run `container system start` again after a reboot.
 
 **Windows:**
@@ -48,6 +52,10 @@ Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH
 As on macOS/Linux, every tool is built by default; pass names to build only some:
 
     ./build.ps1 claude agy
+
+To install only the wrapper scripts, without rebuilding the images:
+
+    ./build.ps1 -ScriptsOnly
 
 On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
@@ -73,7 +81,7 @@ Same on every OS — from any project directory:
     agy
     opencode
 
-The current directory is mounted into the container at `/workspace/<folder>-<hash>`, so each tool only sees the project you're in. The hash is taken from the host path, so every project gets its own path inside the container. That matters because the tools keep per-project state (sessions, memory, folder trust) by path. With one shared path, every project would be treated as the same one. Moving or renaming a project on the host gives it a new path, so its earlier sessions won't show up for it anymore.
+The current directory is mounted into the container at `/workspace/<hash>/<folder>`, so each tool only sees the project you're in. The folder keeps its own name inside the container. The hash is taken from the host path, so every project gets its own path inside the container. That matters because the tools keep per-project state (sessions, memory, folder trust) by path. With one shared path, every project would be treated as the same one. Moving or renaming a project on the host gives it a new path, so its earlier sessions won't show up for it anymore.
 
 ## Sandbox
 

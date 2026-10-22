@@ -3,6 +3,8 @@
 # Builds every tool by default, or only the ones named as arguments:
 #   ./build            # all tools
 #   ./build claude agy # just these
+# Pass --scripts-only to install the wrapper scripts without rebuilding images:
+#   ./build --scripts-only [tools]
 # Auto-detects the engine: Apple `container` on macOS, Podman on Linux.
 # On Windows, use build.ps1 instead.
 set -euo pipefail
@@ -14,7 +16,16 @@ case "$(uname -s)" in
   *) echo "Unsupported OS: $(uname -s). Use build.ps1 on Windows." >&2; exit 1 ;;
 esac
 
-if [ "$ENGINE" = "container" ]; then
+SCRIPTS_ONLY=0
+args=()
+for arg in "$@"; do
+  case "$arg" in
+    --scripts-only) SCRIPTS_ONLY=1 ;;
+    *) args+=("$arg") ;;
+  esac
+done
+
+if [ "$SCRIPTS_ONLY" = 0 ] && [ "$ENGINE" = "container" ]; then
   container system start >/dev/null 2>&1 || true
   # container build runs its BuildKit builder under Rosetta regardless of
   # target architecture; install it once if missing, or `container build`
@@ -27,8 +38,8 @@ fi
 
 all_tools=("agy" "claude" "codex" "copilot" "opencode")
 
-if [ "$#" -gt 0 ]; then
-  tools=("$@")
+if [ "${#args[@]}" -gt 0 ]; then
+  tools=("${args[@]}")
   for tool in "${tools[@]}"; do
     case " ${all_tools[*]} " in
       *" $tool "*) ;;
@@ -39,9 +50,11 @@ else
   tools=("${all_tools[@]}")
 fi
 
-for tool in "${tools[@]}"; do
-  "$ENGINE" build --no-cache -t $tool-cli ./containers/$tool
-done
+if [ "$SCRIPTS_ONLY" = 0 ]; then
+  for tool in "${tools[@]}"; do
+    "$ENGINE" build --no-cache -t $tool-cli ./containers/$tool
+  done
+fi
 
 mkdir -p "$HOME/.local/bin"
 cp "${tools[@]/#/bin/}" "$HOME/.local/bin/"

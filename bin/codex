@@ -21,7 +21,7 @@ else
   HASH="$(printf '%s' "$HOST_DIR" | shasum -a 256 | cut -c1-12)"
 fi
 NAME="$(basename "$HOST_DIR")"
-WORKDIR="/workspace/${NAME//[^A-Za-z0-9._-]/_}-$HASH"
+WORKDIR="/workspace/$HASH/${NAME//[^A-Za-z0-9._-]/_}"
 
 ENV_ARGS=()
 

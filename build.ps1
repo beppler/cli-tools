@@ -3,7 +3,12 @@
 # Builds every tool by default, or only the ones named as arguments:
 #   .\build.ps1             # all tools
 #   .\build.ps1 claude agy  # just these
-param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Tools)
+# Pass -ScriptsOnly to install the wrapper scripts without rebuilding images:
+#   .\build.ps1 -ScriptsOnly [tools]
+param(
+    [switch]$ScriptsOnly,
+    [Parameter(ValueFromRemainingArguments = $true)][string[]]$Tools
+)
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -21,8 +26,10 @@ else {
     $Tools = $AllTools
 }
 
-foreach ($tool in $Tools) {
-    container build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
+if (-not $ScriptsOnly) {
+    foreach ($tool in $Tools) {
+        container build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
+    }
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
