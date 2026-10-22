@@ -1,4 +1,4 @@
-FROM oven/bun:slim
+FROM docker.io/oven/bun:slim
 
 RUN apt-get update \
     && apt-get upgrade -y \
