@@ -7,6 +7,7 @@
 #   .\build.ps1 -ScriptsOnly [tools]
 param(
     [switch]$ScriptsOnly,
+    [switch]$PruneImages,
     [Parameter(ValueFromRemainingArguments = $true)][string[]]$Tools
 )
 
@@ -30,6 +31,10 @@ if (-not $ScriptsOnly) {
     foreach ($tool in $Tools) {
         container build --no-cache -t "$tool-cli" (Join-Path $ScriptDir "containers" $tool)
     }
+}
+
+if ($PruneImages) {
+    container image prune -f
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
