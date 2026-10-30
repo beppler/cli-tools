@@ -31,10 +31,12 @@ case "$(uname -s)" in
 esac
 
 SCRIPTS_ONLY=0
+PRUNE_IMAGES=0
 args=()
 for arg in "$@"; do
   case "$arg" in
     --scripts-only) SCRIPTS_ONLY=1 ;;
+    --prune-images) PRUNE_IMAGES=1 ;;
     *) args+=("$arg") ;;
   esac
 done
@@ -68,6 +70,10 @@ if [ "$SCRIPTS_ONLY" = 0 ]; then
   for tool in "${tools[@]}"; do
     "$ENGINE" build --no-cache -t $tool-cli ./containers/$tool
   done
+fi
+
+if [ "$PRUNE_IMAGES" = 1 ]; then
+  "$ENGINE" image prune -f
 fi
 
 mkdir -p "$HOME/.local/bin"
