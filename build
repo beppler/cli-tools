@@ -73,7 +73,7 @@ if [ "$SCRIPTS_ONLY" = 0 ]; then
 fi
 
 if [ "$PRUNE_IMAGES" = 1 ]; then
-  "$ENGINE" image prune -f
+  "$ENGINE" image prune
 fi
 
 mkdir -p "$HOME/.local/bin"

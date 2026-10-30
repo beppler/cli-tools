@@ -30,6 +30,10 @@ If you only changed the wrapper scripts in `bin/`, install them without rebuildi
 
     ./build --scripts-only
 
+To prune dangling images left over by previous builds after (re)building (tool names work here too):
+
+    ./build --prune-images [tools]
+
 On macOS, `container` requires Apple Silicon and macOS 15+ (full support on macOS 26). If the daemon isn't running yet, `build` starts it for you; on some setups you may need to run `container system start` again after a reboot.
 
 **Windows:**
@@ -56,6 +60,10 @@ As on macOS/Linux, every tool is built by default; pass names to build only some
 To install only the wrapper scripts, without rebuilding the images:
 
     ./build.ps1 -ScriptsOnly
+
+To prune dangling images left over by previous builds after (re)building:
+
+    ./build.ps1 -PruneImages [tools]
 
 On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
