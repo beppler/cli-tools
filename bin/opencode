@@ -65,12 +65,16 @@ fi
 # file handling and apt-get; Apple `container` runs each container in its
 # own VM instead.
 SEC_ARGS=()
+RUN_ARGS=()
 
 if [ "$ENGINE" != container ]; then
   SEC_ARGS+=(--security-opt no-new-privileges --cap-drop=ALL --cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETUID,SETGID)
+else
+  RUN_ARGS+=(--progress none)
 fi
 
 "$ENGINE" run --rm -it \
+  "${RUN_ARGS[@]+"${RUN_ARGS[@]}"}" \
   -v "$HOST_DIR":"$WORKDIR" -w "$WORKDIR" \
   -v "$HOME_DIR":/root \
   "${ENV_ARGS[@]+"${ENV_ARGS[@]}"}" \
