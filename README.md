@@ -91,6 +91,31 @@ Same on every OS — from any project directory:
 
 The current directory is mounted into the container at `/workspace/<hash>/<folder>`, so each tool only sees the project you're in. The folder keeps its own name inside the container. The hash is taken from the host path, so every project gets its own path inside the container. That matters because the tools keep per-project state (sessions, memory, folder trust) by path. With one shared path, every project would be treated as the same one. Moving or renaming a project on the host gives it a new path, so its earlier sessions won't show up for it anymore.
 
+### Windows line endings (CRLF)
+
+A Git repo cloned on Windows has CRLF files on disk and LF in the index, which the host's global `core.autocrlf=true` hides. The container doesn't see your Windows gitconfig, so without help `git status` would show every file as modified. The Windows wrappers (`bin/*.ps1`) therefore pass these settings to Git inside the container:
+
+    core.autocrlf=true
+    core.filemode=false
+
+They are set through `GIT_CONFIG_*` environment variables, so only Windows runs are affected and the images stay portable. Two things to know:
+
+- A committed `.gitattributes` still takes precedence over these settings.
+- The environment settings override the repo's own `.git/config`. If you deliberately keep a repo LF-only on Windows (`core.autocrlf=false`), a `git checkout` or `git stash pop` inside the container can rewrite files to CRLF.
+
+To check what Git sees inside the container:
+
+    git config --show-origin --get-all core.autocrlf   # which setting applies, and from where
+    git ls-files --eol                                  # index (i/) vs disk (w/) line endings
+    git diff --ignore-cr-at-eol --stat                  # is anything really changed?
+
+If you still see phantom diffs, you can set the same values in the repo itself (stored in `.git/config`, so nothing is committed and collaborators are unaffected):
+
+    git config core.autocrlf true
+    git config core.filemode false
+
+It also helps to add this to the project's `CLAUDE.md` / `AGENTS.md`: "This working tree uses Windows line endings. Never convert or 'fix' line endings. Verify real changes with `git diff --ignore-cr-at-eol`." Don't run `dos2unix` in the container: it only moves the phantom changes to the Windows side and breaks `.bat`/`.cmd` files.
+
 ## Sandbox
 
 The tools run as root inside their containers. That root is not host root: rootless Podman maps it to your own user, rootless Docker does the same, and Apple `container` and `wslc` run each container in its own lightweight VM. On Linux the scripts refuse to run against a non-rootless (system) Docker daemon, because there container root would be host root — set up rootless Docker instead:
