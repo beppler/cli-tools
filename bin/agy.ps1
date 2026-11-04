@@ -15,7 +15,10 @@ $WorkDir = "/workspace/$($Hash.Substring(0, 12))/$Name"
 
 $EnvArgs=@(
   "-e", "COLORTERM=truecolor",
-  "-e", "TERM=xterm-256color"
+  "-e", "TERM=xterm-256color",
+  "-e", "GIT_CONFIG_COUNT=2",
+  "-e", "GIT_CONFIG_KEY_0=core.autocrlf", "-e", "GIT_CONFIG_VALUE_0=true",
+  "-e", "GIT_CONFIG_KEY_1=core.filemode",  "-e", "GIT_CONFIG_VALUE_1=false"
 )
 
 if (-not [string]::IsNullOrEmpty($env:GEMINI_API_KEY)) {
