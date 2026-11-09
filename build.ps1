@@ -34,7 +34,7 @@ if (-not $ScriptsOnly) {
 }
 
 if ($PruneImages) {
-    container image prune
+    container image prune -f
 }
 
 $Dest = "$env:LOCALAPPDATA\Programs\bin"
