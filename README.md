@@ -1,177 +1,191 @@
-# Containerized AI CLIs (Claude, Codex, Copilot, Antigravity, OpenCode)
+# Containerized AI Coding CLIs
 
-Each tool runs in its own container image with its own Node.js runtime.
-The engine is auto-detected/chosen per OS:
+Run **Claude Code**, **Codex**, **GitHub Copilot**, **Antigravity**, and **OpenCode** in isolated containers — same commands, every OS, no Node.js or Python sprawl on your host. Each tool ships as its own image with its own runtime and its own persistent home directory, and it only ever sees the project directory you launch it from.
 
-| OS      | Engine                                         |
-| ------- | ---------------------------------------------- |
-| macOS   | Apple `container` (native, Apple Silicon only) |
-| Linux   | Podman (rootless) — or rootless Docker         |
-| Windows | WSL Containers (`wslc.exe`) — native.          |
+| Tool | Command | Entrypoint notes |
+| ---- | ------- | --------------- |
+| Claude Code | `claude` | `IS_SANDBOX=1` so `--dangerously-skip-permissions` works as root |
+| Codex | `codex` | full-access sandbox mode inside the container |
+| GitHub Copilot | `copilot` | |
+| Antigravity | `agy` | |
+| OpenCode | `opencode` | provider-agnostic: ANTHROPIC / OPENAI / GEMINI keys all supported |
 
-Image stores are per-engine and per-machine — build once on each machine you use (there's no shared cache between Apple `container`, Podman, and `wslc` on another box).
+## Container engines
+
+Auto-detected per OS, no configuration needed:
+
+| OS | Engine |
+| -- | ------ |
+| macOS | Apple `container` (Apple Silicon only, macOS 15+) |
+| Linux | Podman (rootless), or rootless Docker |
+| Windows | WSL Containers (`wslc.exe`) — native, ships with WSL |
+
+Images are stored **per engine and per machine** — you must build on each machine you use; there's no shared cache between `container`, Podman, and `wslc`.
 
 ## Setup
 
-**macOS / Linux:**
+### macOS / Linux
 
-    ./build
+```bash
+./build              # build and install all five tools
+./build claude agy   # only some
+./build --scripts-only       # re-install wrappers without rebuilding images
+./build --prune-images       # also prune dangling build images
+```
 
-Installs wrapper scripts to `~/.local/bin/claude`, `~/.local/bin/codex`,
-`~/.local/bin/agy`, `~/.local/bin/opencode`. Make sure `~/.local/bin` is on your `PATH`.
-
-By default every tool is built. To rebuild only some of them, pass their names:
-
-    ./build claude agy
-
-Only the images and wrapper scripts for the tools you name are (re)built and installed.
-
-If you only changed the wrapper scripts in `bin/`, install them without rebuilding the images (tool names work here too):
-
-    ./build --scripts-only
-
-To prune dangling images left over by previous builds after (re)building (tool names work here too):
-
-    ./build --prune-images [tools]
+Wrappers install to `~/.local/bin/` — make sure it's on your `PATH`.
 
 On macOS, `container` requires Apple Silicon and macOS 15+ (full support on macOS 26). If the daemon isn't running yet, `build` starts it for you; on some setups you may need to run `container system start` again after a reboot.
 
-**Windows:**
+### Windows (WSL Containers preview)
 
-WSL Containers is currently a preview feature. One-time setup, in an elevated PowerShell:
+One-time setup in an elevated PowerShell:
 
-    wsl --update --pre-release
-    wsl --shutdown
+```powershell
+wsl --update --pre-release
+wsl --shutdown
+```
 
 Reopen your terminal, then confirm it's there:
 
-    wslc --version   # expect 2.9.3 or higher
+```powershell
+wslc --version   # expect 2.9.3+
+```
 
-Then build and install:
+Then:
 
-    ./build.ps1
+```powershell
+./build.ps1                # all tools
+./build.ps1 claude agy     # only some
+./build.ps1 -ScriptsOnly   # wrappers only
+./build.ps1 -PruneImages   # also prune dangling images
+```
 
-Installs wrapper scripts to `%LOCALAPPDATA%\Programs\Bin`. Add that to your PATH and `claude`, `codex`, `agy`, `opencode` work from PowerShell or cmd.exe.
+Wrappers install to `%LOCALAPPDATA%\Programs\bin`. Add that to your PATH and `claude`, `codex`, `copilot`, `agy`, `opencode` work from PowerShell or cmd.exe.
 
-As on macOS/Linux, every tool is built by default; pass names to build only some:
+`wslc.exe` ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
 
-    ./build.ps1 claude agy
+### WSL (Podman networking)
 
-To install only the wrapper scripts, without rebuilding the images:
+To make Podman network work on WSL, install the `slirp4netns` package:
 
-    ./build.ps1 -ScriptsOnly
+```bash
+sudo apt update && sudo apt install -y slirp4netns
+```
 
-To prune dangling images left over by previous builds after (re)building:
+And add the following lines to `/etc/containers/containers.conf`:
 
-    ./build.ps1 -PruneImages [tools]
-
-On Windows it uses `wslc.exe` that ships as part of WSL itself and runs each container in its own lightweight Hyper-V VM.
-
-**WSL:**
-
-To make Podman network work on WSL, the slirp4netns package must be installed:
-
-    sudo apt update && sudo apt install -y slirp4netns
-
-Then `/etc/containers/containers.conf` the following lines must be added:
-
-    [network]
-    default_rootless_network_cmd = "slirp4netns"
+```toml
+[network]
+default_rootless_network_cmd = "slirp4netns"
+```
 
 ## Usage
 
 Same on every OS — from any project directory:
 
-    cd ~/my-project
-    claude
-    codex
-    copilot
-    agy
-    opencode
+```bash
+cd ~/my-project
+claude    # or codex / copilot / agy / opencode
+```
 
-The current directory is mounted into the container at `/workspace/<hash>/<folder>`, so each tool only sees the project you're in. The folder keeps its own name inside the container. The hash is taken from the host path, so every project gets its own path inside the container. That matters because the tools keep per-project state (sessions, memory, folder trust) by path. With one shared path, every project would be treated as the same one. Moving or renaming a project on the host gives it a new path, so its earlier sessions won't show up for it anymore.
+**How mounting works:** the current directory is bind-mounted at `/workspace/<hash-of-host-path>/<folder-name>`. The folder keeps its own name inside the container. The hash is deliberate — these tools keep per-project state (sessions, memory, folder trust) keyed by path, so every project must map to a unique in-container path. Side effect: renaming or moving a project on the host gives it a fresh hash and a fresh session history.
 
-### Windows line endings (CRLF)
+**Auth persistence:** each tool keeps its credentials in a dedicated host directory, bind-mounted as `/root` in the container — log in once, stay logged in:
 
-A Git repo cloned on Windows has CRLF files on disk and LF in the index, which the host's global `core.autocrlf=true` hides. The container doesn't see your Windows gitconfig, so without help `git status` would show every file as modified. The Windows wrappers (`bin/*.ps1`) therefore pass these settings to Git inside the container:
+```text
+~/.cli-tools/claude-home          (macOS/Linux)
+~/.cli-tools/codex-home
+~/.cli-tools/copilot-home
+~/.cli-tools/antigravity-home
+~/.cli-tools/opencode-home
+```
 
-    core.autocrlf=true
-    core.filemode=false
+On Windows the same layout lives under `%USERPROFILE%\.cli-tools\`.
 
-They are set through `GIT_CONFIG_*` environment variables, so only Windows runs are affected and the images stay portable. Two things to know:
+## Logging in
+
+| Tool | Method | Notes |
+| ---- | ------ | ----- |
+| Claude, Antigravity | Browser OAuth | prints a URL/code to paste into your host browser — like SSH login |
+| Codex, Copilot | Device code | browser OAuth can't work: the callback server binds `127.0.0.1` inside the container, reachable from nowhere — no port-forwarding fix is possible |
+| Antigravity (personal accounts) | API key | OAuth unavailable; set `GEMINI_API_KEY` in a `.env` in `antigravity-home` — get one at [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| OpenCode | Any | reads whichever of `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) is set, or `opencode auth login` in-container |
+
+API keys from your shell are passed through automatically (including PowerShell on Windows — `wslc.exe` is a native Windows process, so the scripts read `$env:...` directly and pass them into the container; no WSL-side configuration needed).
+
+Note that OpenAI device-code login is **disabled by default** and must be turned on before it will work:
+
+- Personal account: ChatGPT → Settings → Security → enable device code login
+- Team/Enterprise/Edu: a workspace admin must allow it under Workspace Settings → Permissions → "Allow device code login" — it's greyed out for regular members otherwise
+
+Or skip login entirely:
+
+```bash
+export ANTHROPIC_API_KEY=...   # or OPENAI_API_KEY / GEMINI_API_KEY
+# PowerShell: $env:ANTHROPIC_API_KEY = "..."
+```
+
+## Sandboxing
+
+Tools run as root **inside** their containers — that root is not your host root:
+
+- rootless Podman / rootless Docker map container root to your own user
+- Apple `container` and `wslc` run each container in a lightweight per-container VM
+
+On Linux the wrappers **refuse to run against a system (rootful) Docker daemon**, where container root would be host root. Fix with:
+
+```bash
+dockerd-rootless-setuptool.sh install
+```
+
+Verify what you're on:
+
+```bash
+podman info --format '{{.Host.Security.Rootless}}'    # expect true
+docker info --format '{{.SecurityOptions}}' | grep rootless
+```
+
+**Linux hardening** (applied automatically by the wrappers on Podman/Docker):
+
+```text
+--security-opt no-new-privileges
+--cap-drop=ALL --cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETUID,SETGID
+```
+
+No privilege escalation via setuid; the dropped capabilities include network admin, raw sockets, kill, chroot, and capability editing. The retained ones are what file handling and `apt-get install` inside the container need. Podman and Docker must run rootless — the scripts check and refuse otherwise (see above); with `sudo podman` or a system dockerd, container root is host root.
+
+**Claude skip-permissions:** the image sets `IS_SANDBOX=1`, which lets `claude --dangerously-skip-permissions` run as root (Claude Code otherwise refuses it when running as root). It's still opt-in — plain `claude` asks for permissions as usual.
+
+## Troubleshooting: Windows line endings (CRLF)
+
+A repo cloned on Windows has CRLF files on disk and LF in the index, which the host's global `core.autocrlf=true` hides. The container doesn't see your Windows gitconfig, so without help `git status` would show every file as modified. The Windows wrappers (`bin/*.ps1`) therefore pass these settings to Git inside the container:
+
+```text
+core.autocrlf=true
+core.filemode=false
+```
+
+They are set through `GIT_CONFIG_*` environment variables, so only Windows runs are affected and the images stay portable.
+
+Two things to know:
 
 - A committed `.gitattributes` still takes precedence over these settings.
 - The environment settings override the repo's own `.git/config`. If you deliberately keep a repo LF-only on Windows (`core.autocrlf=false`), a `git checkout` or `git stash pop` inside the container can rewrite files to CRLF.
 
 To check what Git sees inside the container:
 
-    git config --show-origin --get-all core.autocrlf   # which setting applies, and from where
-    git ls-files --eol                                  # index (i/) vs disk (w/) line endings
-    git diff --ignore-cr-at-eol --stat                  # is anything really changed?
+```bash
+git config --show-origin --get-all core.autocrlf   # which setting applies, and from where
+git ls-files --eol                                 # index (i/) vs disk (w/) line endings
+git diff --ignore-cr-at-eol --stat                 # is anything really changed?
+```
 
-If you still see phantom diffs, you can set the same values in the repo itself (stored in `.git/config`, so nothing is committed and collaborators are unaffected):
+If you still see phantom diffs, set the same values in the repo itself (stored in `.git/config`, so nothing is committed and collaborators are unaffected):
 
-    git config core.autocrlf true
-    git config core.filemode false
+```bash
+git config core.autocrlf true
+git config core.filemode false
+```
 
 It also helps to add this to the project's `CLAUDE.md` / `AGENTS.md`: "This working tree uses Windows line endings. Never convert or 'fix' line endings. Verify real changes with `git diff --ignore-cr-at-eol`." Don't run `dos2unix` in the container: it only moves the phantom changes to the Windows side and breaks `.bat`/`.cmd` files.
-
-## Sandbox
-
-The tools run as root inside their containers. That root is not host root: rootless Podman maps it to your own user, rootless Docker does the same, and Apple `container` and `wslc` run each container in its own lightweight VM. On Linux the scripts refuse to run against a non-rootless (system) Docker daemon, because there container root would be host root — set up rootless Docker instead:
-
-    dockerd-rootless-setuptool.sh install
-
-You can check what you're on with:
-
-    podman info --format '{{.Host.Security.Rootless}}'        # expect true
-    docker info --format '{{.SecurityOptions}}' | grep rootless
-
-**Claude skip-permissions mode:** the Claude image sets `IS_SANDBOX=1`, so `claude --dangerously-skip-permissions` works inside the container (Claude Code otherwise refuses it when running as root). It is still opt-in: plain `claude` asks for permissions as usual.
-
-**Podman/Docker hardening (Linux):** the wrappers add
-
-    --security-opt no-new-privileges
-    --cap-drop=ALL --cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETUID,SETGID
-
-Processes can't gain privileges through setuid binaries, and the container drops network admin, raw sockets, kill, chroot and capability-editing privileges. The kept capabilities are what file handling and `apt-get install` inside the container need. Podman and Docker must run rootless — the scripts check and refuse otherwise (see Sandbox above); with `sudo podman` or a system dockerd, container root is host root.
-
-## Auth
-
-Each tool's config/credentials persist in its own home directory, so you only log in once per tool:
-
-    ~/.cli-tools/claude-home              (macOS/Linux)
-    ~/.cli-tools/codex-home
-    ~/.cli-tools/copilot-home
-    ~/.cli-tools/antigravity-home
-    ~/.cli-tools/opencode-home
-    %USERPROFILE%\.cli-tools\claude-home  (Windows, same idea)
-    %USERPROFILE%\.cli-tools\codex-home
-    %USERPROFILE%\.cli-tools\copilot-home
-    %USERPROFILE%\.cli-tools\antigravity-home
-    %USERPROFILE%\.cli-tools\opencode-home
-
-Browser-based OAuth login (**Claude**, **Antigravity**) prints a URL/code to paste into your host browser — same experience as logging in over SSH.
-
-OAuth do not work for **Antigravity** for personal accounts, on this case a `.env` file can be created configuring the `GEMINI_API_KEY` obtained from [Google AI Studio](https://aistudio.google.com/app/apikey) on `antigravity-home` directory.
-
-Device-code login should be used on **Codex** and **Copilot** because browser flow won't work in this containerized setup. OAuth callback server is hardcoded to bind `127.0.0.1` inside its own process, so the redirect from your host browser can never reach it — no port-forwarding fix is possible. Use device-code login instead.
-
-Device-code login is **disabled by default** on OpenAI accounts and must be turned on before it will work:
-
-- Personal account: ChatGPT → Settings → Security → enable device code login.
-- Team/Enterprise/Edu workspace: a workspace admin must enable it under Workspace Settings → Permissions → "Allow device code login" — it's greyed out for regular members otherwise.
-
-Alternatively, set an API key before running:
-
-    export ANTHROPIC_API_KEY=...    # macOS/Linux
-    export OPENAI_API_KEY=...
-    export GEMINI_API_KEY=...
-
-    $env:ANTHROPIC_API_KEY = "..."  # Windows PowerShell
-
-**OpenCode** is provider-agnostic: it picks up whichever of `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY`/`GOOGLE_API_KEY` is set (all are passed through by the wrapper script), or you can run `opencode auth login` inside the container to store credentials in `opencode-home`.
-
-On Windows this just works — `wslc.exe` is a native Windows process, so the scripts read `$env:...` directly and pass it into the container.
-
-No WSL-side environment configuration needed.
