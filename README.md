@@ -190,7 +190,7 @@ Orphans are safe to delete. A reused PID can make an orphan look alive, so a fol
 ~/.cli-tools/opencode-home/.local/state/opencode
 ```
 
-Only `service.json` (the per-run server registration) and the remaining `latest/` and `locks/` content stay ephemeral — they can't be shared between running instances. When two instances run at once, the one that exits last wins for any file it changed. If a run crashes before the save-back, the previous saved copy is used.
+Only `service.json` (the per-run server registration) and the remaining `latest/` and `locks/` content stay ephemeral — they can't be shared between running instances. When two instances run at once, the one that exits last wins for `model.json` and the highlights marker. Prompt history is the exception: `prompt-history.jsonl` is a JSONL log, so each run appends only the entries that are not already in the shared file, and the histories of concurrent instances merge. If a run crashes before the save-back, the previous saved copy is used.
 
 ## Troubleshooting: Windows line endings (CRLF)
 
