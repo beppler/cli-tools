@@ -4,6 +4,15 @@ $ErrorActionPreference = "Stop"
 $HomeDirWin = "$env:USERPROFILE\.cli-tools\opencode-home"
 New-Item -ItemType Directory -Force -Path $HomeDirWin | Out-Null
 $HomeDir = $HomeDirWin -replace '\\','/'
+
+# opencode keeps a single service registration (service.json) in its state dir.
+# Sharing it between containers makes each instance kill the other's server, so
+# every run gets its own temporary state dir, removed on exit.
+# Named after this script's PID so orphaned dirs are easy to spot (PID not running).
+$StateDirWin = Join-Path "$HomeDirWin\.local\state" "opencode-$PID"
+Remove-Item -Recurse -Force -Path $StateDirWin -ErrorAction SilentlyContinue  # stale leftover with the same PID
+New-Item -ItemType Directory -Force -Path $StateDirWin | Out-Null
+$StateDir = $StateDirWin -replace '\\','/'
 $Workspace = $PWD.Path -replace '\\','/'
 
 # Mount the project at a path unique to this host folder, so tools that keep
@@ -37,9 +46,15 @@ if (-not [string]::IsNullOrEmpty($env:GOOGLE_GENAI_USE_VERTEXAI)) {
   $EnvArgs += "-e", "GOOGLE_GENAI_USE_VERTEXAI=$env:GOOGLE_GENAI_USE_VERTEXAI"
 }
 
-container run --rm -it `
-  --name "opencode_cli_$(Get-Random)" `
-  -v "${Workspace}:${WorkDir}" -w $WorkDir `
-  -v "${HomeDir}:/root" `
-  $EnvArgs `
-  opencode-cli @args
+try {
+  container run --rm -it `
+    --name "opencode_cli_$(Get-Random)" `
+    -v "${Workspace}:${WorkDir}" -w $WorkDir `
+    -v "${HomeDir}:/root" `
+    -v "${StateDir}:/root/.local/state/opencode" `
+    $EnvArgs `
+    opencode-cli @args
+}
+finally {
+  Remove-Item -Recurse -Force -Path $StateDirWin -ErrorAction SilentlyContinue
+}
