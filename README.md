@@ -157,6 +157,33 @@ No privilege escalation via setuid; the dropped capabilities include network adm
 
 **Claude skip-permissions:** the image sets `IS_SANDBOX=1`, which lets `claude --dangerously-skip-permissions` run as root (Claude Code otherwise refuses it when running as root). It's still opt-in — plain `claude` asks for permissions as usual.
 
+## Troubleshooting: leftover opencode state folders
+
+opencode keeps a service registration in its state directory, which can't be shared between running instances. Each `opencode` run therefore mounts its own temporary state folder over `/root/.local/state/opencode`, named after the launcher's PID and removed when the run ends:
+
+```text
+~/.cli-tools/opencode-home/.local/state/opencode-<pid>
+```
+
+A crash or `kill -9` can leave one behind. A folder is an orphan when no process with that PID is running. To list them (macOS/Linux):
+
+```bash
+for d in ~/.cli-tools/opencode-home/.local/state/opencode-*; do
+  [ -d "$d" ] || continue
+  kill -0 "${d##*-}" 2>/dev/null || echo "orphan: $d"
+done
+```
+
+On Windows (PowerShell):
+
+```powershell
+Get-ChildItem "$env:USERPROFILE\.cli-tools\opencode-home\.local\state" -Directory -Filter 'opencode-*' |
+  Where-Object { -not (Get-Process -Id ($_.Name -replace '^opencode-','') -ErrorAction SilentlyContinue) } |
+  ForEach-Object { "orphan: $($_.FullName)" }
+```
+
+Orphans are safe to delete. A reused PID can make an orphan look alive, so a folder that is never listed isn't proof that it's in use.
+
 ## Troubleshooting: Windows line endings (CRLF)
 
 A repo cloned on Windows has CRLF files on disk and LF in the index, which the host's global `core.autocrlf=true` hides. The container doesn't see your Windows gitconfig, so without help `git status` would show every file as modified. The Windows wrappers (`bin/*.ps1`) therefore pass these settings to Git inside the container:
