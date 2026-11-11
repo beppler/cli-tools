@@ -8,13 +8,14 @@ $HomeDir = $HomeDirWin -replace '\\','/'
 # opencode keeps a single service registration (service.json) in its state dir.
 # Sharing it between containers makes each instance kill the other's server, so
 # every run gets its own temporary state dir, removed on exit.
-# Per-user state (model selection, prompt history) must survive runs, so it is
-# seeded from the shared state dir below and saved back at the end. service.json,
-# latest/ and locks/ stay per-run: they can't be shared between instances.
+# Per-user state (model selection, prompt history, the release-highlights
+# "seen" marker) must survive runs, so it is seeded from the shared state dir
+# below and saved back at the end. service.json and the rest of latest/ and
+# locks/ stay per-run: they can't be shared between instances.
 $StateParent = "$HomeDirWin\.local\state"
 $SharedDirWin = Join-Path $StateParent "opencode"
 New-Item -ItemType Directory -Force -Path $SharedDirWin | Out-Null
-$SharedFiles = @("model.json", "prompt-history.jsonl")
+$SharedFiles = @("model.json", "prompt-history.jsonl", "latest/tui/highlights.json")
 # Named after this script's PID so orphaned dirs are easy to spot (PID not running).
 $StateDirWin = Join-Path $StateParent "opencode-$PID"
 Remove-Item -Recurse -Force -Path $StateDirWin -ErrorAction SilentlyContinue  # stale leftover with the same PID
@@ -22,7 +23,9 @@ New-Item -ItemType Directory -Force -Path $StateDirWin | Out-Null
 foreach ($File in $SharedFiles) {
   $SharedFile = Join-Path $SharedDirWin $File
   if (Test-Path -PathType Leaf $SharedFile) {
-    Copy-Item $SharedFile (Join-Path $StateDirWin $File)
+    $RunFile = Join-Path $StateDirWin $File
+    New-Item -ItemType Directory -Force -Path (Split-Path $RunFile) | Out-Null
+    Copy-Item $SharedFile $RunFile
   }
 }
 $StateDir = $StateDirWin -replace '\\','/'
@@ -76,6 +79,7 @@ finally {
       $RunHash = (Get-FileHash $RunFile).Hash
       $SharedHash = if (Test-Path -PathType Leaf $SharedFile) { (Get-FileHash $SharedFile).Hash } else { "" }
       if ($RunHash -ne $SharedHash) {
+        New-Item -ItemType Directory -Force -Path (Split-Path $SharedFile) | Out-Null
         Copy-Item $RunFile $SharedFile -Force
       }
     }
