@@ -184,6 +184,14 @@ Get-ChildItem "$env:USERPROFILE\.cli-tools\opencode-home\.local\state" -Director
 
 Orphans are safe to delete. A reused PID can make an orphan look alive, so a folder that is never listed isn't proof that it's in use.
 
+**What persists between runs:** model selection (`model.json`) and prompt history (`prompt-history.jsonl`) are seeded from, and saved back to, the shared state folder on every run:
+
+```text
+~/.cli-tools/opencode-home/.local/state/opencode
+```
+
+Only `service.json` (the per-run server registration), `latest/`, and `locks/` stay ephemeral — they can't be shared between running instances. When two instances run at once, the one that exits last wins for any file it changed. If a run crashes before the save-back, the previous saved copy is used.
+
 ## Troubleshooting: Windows line endings (CRLF)
 
 A repo cloned on Windows has CRLF files on disk and LF in the index, which the host's global `core.autocrlf=true` hides. The container doesn't see your Windows gitconfig, so without help `git status` would show every file as modified. The Windows wrappers (`bin/*.ps1`) therefore pass these settings to Git inside the container:
